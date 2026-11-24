@@ -1,0 +1,69 @@
+name: Build unsigned IPA
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Selecionar Xcode estável com SDK iOS 26 ou superior
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEVELOPER_DIR="$(python3 - <<'PY'
+          import pathlib, re
+          versions = []
+          for app in pathlib.Path('/Applications').glob('Xcode*.app'):
+              match = re.fullmatch(r'Xcode_(\d+(?:\.\d+)*).app', app.name)
+              if match:
+                  versions.append((tuple(map(int, match[1].split('.'))), app))
+          app = max(versions)[1] if versions else pathlib.Path('/Applications/Xcode.app')
+          print(app / 'Contents/Developer')
+          PY
+          )"
+          export DEVELOPER_DIR
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          xcodebuild -version
+          sdk="$(xcrun --sdk iphoneos --show-sdk-version)"
+          echo "iPhoneOS SDK $sdk"
+          test "${sdk%%.*}" -ge 26
+
+      - name: Gerar projeto
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Compilar para iPhone
+        run: |
+          xcodebuild -project PugPlanner.xcodeproj -scheme PugPlanner \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -configuration Release -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+
+      - name: Verificar e empacotar
+        run: |
+          set -euo pipefail
+          app="build/Build/Products/Release-iphoneos/PugPlanner.app"
+          test -x "$app/PugPlanner"
+          test -f "$app/Interface/index.html"
+          test -f "$app/reminder_ring.wav"
+          test ! -e "$app/PlugIns"
+          test ! -e "$app/embedded.mobileprovision"
+          test ! -e "$app/_CodeSignature"
+          test "$(plutil -extract MinimumOSVersion raw "$app/Info.plist")" = "16.0"
+          mkdir -p Payload
+          ditto "$app" Payload/PugPlanner.app
+          /usr/bin/zip -qry PugPlanner.ipa Payload
+          unzip -tq PugPlanner.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PugPlanner-IPA
+          path: PugPlanner.ipa
+          if-no-files-found: error
+          retention-days: 7

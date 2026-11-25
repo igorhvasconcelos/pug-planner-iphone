@@ -27,6 +27,10 @@ A aplicação é híbrida. A interface local usa HTML, CSS e JavaScript. Swift e
     └── Interface/
         ├── index.html
         ├── style.css
+        ├── android-style.css
+        ├── android.js
+        ├── food-license.txt
+        ├── pug-launcher.png
         ├── content.js
         ├── model.js
         ├── ui.js
@@ -37,7 +41,7 @@ A aplicação é híbrida. A interface local usa HTML, CSS e JavaScript. Swift e
 
 ## B e C. Projeto e compilação
 
-O ficheiro `project.yml` define um só alvo de aplicação, o identificador `com.luismartins.pugplanner.b7d839ce` e a versão mínima iOS 16.0. A configuração usa o Info.plist incluído. O identificador tem um sufixo específico desta entrega. A disponibilidade para registo é verificada pela Apple durante a assinatura. A extensão de partilha externa e o App Group da versão anterior foram retirados. Para criar uma tarefa a partir de uma fotografia, abre **Imagem** dentro do Pug Planner.
+O ficheiro `project.yml` define um só alvo de aplicação, o identificador `com.luismartins.pugplanner.b7d839ce` e a versão mínima iOS 16.0. A configuração usa o Info.plist incluído. O identificador tem um sufixo específico desta entrega. A disponibilidade para registo é verificada pela Apple durante a assinatura. A extensão de partilha externa e o App Group da versão anterior foram retirados. Para criar uma tarefa a partir de uma fotografia, escolhe **Criar a partir de imagem** no Pug Planner.
 
 No iOS 26 e posterior, a app pede autorização para usar AlarmKit. Em versões anteriores usa notificações locais normais com som, sujeitas ao modo silencioso, à Concentração e às preferências de notificações. Nestas versões, a app programa até 64 ocorrências futuras, contando com os temporizadores, e repõe a fila ao abrires a app ou alterares o plano. Estas notificações terminam após a reprodução do som. O ditado usa o teclado do iPhone. O projeto não declara entitlements nem solicita Push Notifications, alertas críticos, iCloud, App Groups ou Sign in with Apple.
 
@@ -77,3 +81,12 @@ Abre a execução vermelha em Actions, entra no trabalho **build**, expande o pr
 
 Se o build ficou verde e **o Sideloadly** falhou, o problema já é de emparelhamento ou assinatura. Para um iPhone ausente, verifica primeiro o cabo, o pedido de confiança e a deteção no iTunes. Para identificador indisponível, define um identificador pessoal único no Sideloadly e conserva-o nas renovações. Se atingiste o limite da conta gratuita, segue a mensagem de limite ou expiração do Sideloadly. Se a app aparecer mas não abrir, confirma Modo de programador, confiança no perfil e validade da assinatura. [FAQ oficial](https://sideloadly.io/faq)
 
+
+
+## Atualização 1.11.0
+
+A interface segue a paleta e as nove áreas do Android 1.11.0. Inclui os 60 exercícios e as respetivas ligações de demonstração, os três vídeos de meditação em português e as cinco demonstrações de treino para cães e gatos. As ligações abrem externamente e requerem Internet.
+
+Para atualizar pelo GitHub, carrega a nova pasta App no repositório existente e instala o novo IPA por cima da edição anterior. Mantém o mesmo Apple ID e o mesmo identificador efetivo no Sideloadly. Podes exportar primeiro uma cópia JSON em Pug. O bundle ID no projeto mantém-se.
+
+A classificação de alimentos usa o Vision do iOS para sugerir opções a confirmar. O catálogo de calorias reproduz os dados da edição Android. As sugestões fotográficas podem diferir das do modelo usado no Android. O seletor de imagens abre dentro de cada página. A edição gratuita conserva um único alvo iOS.

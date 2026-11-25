@@ -1,0 +1,32 @@
+html{--bg:#f5f0e9;--card:#fffcf7;--ink:#302924;--muted:#665951;--line:#ddd2c7;--accent:#496457;--tone:#e4ebe2;--peach:#f1e0db;--sand:#f0e2d0;--blue:#e3ebee;--sage:#e4ebe2;--clay:#f1e0db;--lilac:#eae5ef}
+html[data-theme="1"]{--accent:#805339;--tone:var(--sand)}
+html[data-theme="2"]{--accent:#6a547b;--tone:var(--lilac)}
+html.dark{--bg:#201d1c;--card:#2e2927;--ink:#f6eee7;--muted:#d5c6bc;--line:#544841;--sand:#473a2d;--blue:#303e45;--sage:#343f35;--clay:#473431;--lilac:#40384a;--peach:var(--clay)}
+[data-tone="sand"]{--panel:var(--sand);--panel-border:#e1cbb0;--panel-ink:#795338}
+[data-tone="blue"]{--panel:var(--blue);--panel-border:#cbdce1;--panel-ink:#3d616e}
+[data-tone="sage"]{--panel:var(--sage);--panel-border:#cddccf;--panel-ink:#436350}
+[data-tone="clay"]{--panel:var(--clay);--panel-border:#e6c9c1;--panel-ink:#854e45}
+[data-tone="lilac"]{--panel:var(--lilac);--panel-border:#dbd0e4;--panel-ink:#624d76}
+.dark [data-tone]{--panel-border:var(--line);--panel-ink:var(--ink)}
+header{display:none}
+main{padding:18px 16px 98px}
+h1,.greeting{font-family:Georgia,serif;letter-spacing:-.03em}
+.card[data-tone],nav button[aria-current=page]{background:var(--panel);border-color:var(--panel-border)}
+.card[data-tone] h2{color:var(--panel-ink)}
+.welcome{margin-top:0;background:linear-gradient(140deg,var(--sand),#f8ecde)!important}
+.dark .welcome{background:linear-gradient(140deg,var(--sand),#3d302a)!important}
+.welcome .copy{flex:1}
+.copy p+p{margin-top:10px}
+.pug-stage{width:126px;height:132px;background:#e6cdb1;border-radius:28px;display:grid;place-items:center}
+.dark .pug-stage{background:#5a4636}
+.pug-stage img{width:118px;height:125px;object-fit:contain}
+.weather-clock{font:700 34px/1.1 -apple-system,sans-serif}
+nav{padding-inline:6px;max-width:680px;margin:auto}
+nav button{white-space:normal;line-height:1.04;font-size:clamp(8px,2.4vw,11px);font-weight:500;min-height:57px}
+nav button .tile{display:grid;place-items:center;border-radius:10px;background:var(--panel);color:var(--panel-ink);width:min(32px,100%);height:30px;margin:0 auto 4px}
+nav button[aria-current=page] .tile{background:var(--card)}
+.video-cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:11px;display:block;margin-bottom:8px}
+.record-photo{width:100%;max-height:300px;object-fit:contain;border-radius:12px}
+.stack{min-width:0}
+@media(min-width:700px){main{padding:24px 24px 100px}.welcome .pug-stage{width:200px;height:170px}.pug-stage img{width:155px;height:160px}}
+nav .nav-icon{width:20px;height:20px;opacity:.73}.dark nav .nav-icon{filter:invert(1)}

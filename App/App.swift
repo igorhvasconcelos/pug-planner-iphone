@@ -21,6 +21,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 final class PlannerController: UIViewController, WKScriptMessageHandler, WKUIDelegate, WKNavigationDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate {
     private var web: WKWebView!
     private let speech = AVSpeechSynthesizer()
+    private var photoMode = "reminder"
     private var ready = false
     private let reminders = LocalReminders()
     private var interface: URL { Bundle.main.bundleURL.appendingPathComponent("Interface",isDirectory:true) }
@@ -90,6 +91,7 @@ final class PlannerController: UIViewController, WKScriptMessageHandler, WKUIDel
                 present(vc,animated:true)
             } catch { call("notice",error.localizedDescription) }
         case "photo":
+            photoMode = body["mode"] as? String ?? "reminder"
             if body["camera"] as? Bool == true {
                 guard UIImagePickerController.isSourceTypeAvailable(.camera) else { call("notice","Câmara indisponível."); return }
                 let picker = UIImagePickerController()
@@ -109,7 +111,15 @@ final class PlannerController: UIViewController, WKScriptMessageHandler, WKUIDel
     private func recognize(_ bytes: Data?) {
         guard let bytes else { call("notice","Não foi possível abrir a imagem."); return }
         Task {
-            do { let text = try await Task.detached { try PlannerMedia.recognize(bytes) }.value; call("recognized",text) }
+            do {
+                let mode = photoMode
+                let result = try await Task.detached { try PlannerMedia.process(bytes, mode: mode) }.value
+                if mode == "reminder" {
+                    call("recognized",result)
+                } else {
+                    web.callAsyncJavaScript("window.mediaResult(mode, result)",arguments:["mode":mode,"result":result],in:nil,in:.page,completionHandler:nil)
+                }
+            }
             catch { call("notice",error.localizedDescription) }
         }
     }

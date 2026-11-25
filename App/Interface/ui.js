@@ -11,25 +11,35 @@ const dialog=$("dialog"),page=$("#page");function closeSheet(){dialog.close()}
 function sheet(title,...items){$("#sheet").replaceChildren(el("div","row spread",heading(title),btn("Fechar",closeSheet)),...items.filter(x=>x!=null));if(!dialog.open)dialog.showModal();dialog.scrollTop=0}
 function form(items,action,label="Guardar"){let f=el("form","",...items),b=el("button","primary",label);b.type="submit";f.append(b);f.onsubmit=e=>{e.preventDefault();action()};return f}
 let noticeTimer;function notice(s){$("#toast").textContent=s;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$("#toast").textContent="",6500)}
-const tabs=["Hoje","Agenda","Bem-estar","Hábitos","Foco","Pug"],icons=["☀","▦","♡","✓","◷","♧"];let tab="Hoje",day=today(),devDay=today(),trainingDay=today(),lastDay=today();
+const tabs=["Hoje","Agenda","Bem-estar","Fitness","Receitas","Meu pet","Hábitos","Foco","Pug"];let tab="Hoje",day=today(),devDay=today(),trainingDay=today(),lastDay=today();
 function go(to){tab=to;render();window.scrollTo(0,0)}
 function dayPicker(value,change){let i=input("date",value);i.onchange=()=>{if(validDay(i.value))change(i.value)};return row(field("Data",i),btn("Hoje",()=>change(today())))}
 function pug(){let i=el("img","pug wave");i.src="pug.png";i.alt=data.name+" com bandana verde";i.style.filter=["none","grayscale(1)","sepia(.5)"][data.appearance||0];let play=()=>{i.classList.remove("wave");void i.offsetWidth;i.classList.add("wave")};i.onclick=play;i.tabIndex=0;i.setAttribute("role","button");i.onkeydown=e=>{if(["Enter"," "].includes(e.key)){e.preventDefault();play()}};return i}
 function progress(n,total){let p=el("progress");p.max=Math.max(total,1);p.value=n;p.setAttribute("aria-label",n+" de "+total);return p}
 function render(){
  document.documentElement.classList.toggle("dark",!!data.dark);document.documentElement.dataset.theme=data.theme||0;
- $("nav").replaceChildren(...tabs.map((t,i)=>{let b=btn("",()=>go(t));b.append(el("span","",icons[i]),t);if(t===tab||t==="Bem-estar"&&["Meditação","Devocional","Treinos"].includes(tab))b.setAttribute("aria-current","page");return b}));
- page.replaceChildren(el("h1","",tab==="Pug"?"O meu Pug":tab));
- const pages={"Hoje":home,"Agenda":agenda,"Hábitos":habits,"Foco":focus,"Bem-estar":wellbeing,"Pug":settings,"Meditação":meditation,"Devocional":devotional,"Treinos":training};pages[tab]();
+ $("nav").replaceChildren(...tabs.map((t,i)=>{let b=btn("",()=>go(t));b.dataset.tone=["sand","blue","clay","sage","clay","sand","sage","lilac","sand"][i];b.append(el("span","tile",tabIcon(i)),t);if(t===tab||t==="Bem-estar"&&["Meditação","Devocional"].includes(tab)||t==="Fitness"&&["Treinos","Calorias dos alimentos"].includes(tab))b.setAttribute("aria-current","page");return b}));
+ page.replaceChildren(...(tab==="Hoje"?[]:[el("h1","",tab==="Pug"?"O meu Pug":tab==="Fitness"?"Fitness and Health":tab)]));
+ const pages={"Hoje":home,"Agenda":agenda,"Hábitos":habits,"Foco":focus,"Bem-estar":wellbeing,"Pug":settings,"Meditação":meditation,"Devocional":devotional,"Treinos":training,"Fitness":fitness,"Receitas":recipes,"Meu pet":pets,"Calorias dos alimentos":food};pages[tab]();
 }
 function tasksFor(d){return data.tasks.filter(t=>occurs(t,d)).sort((a,b)=>a.time.localeCompare(b.time))}
 function taskRows(d){let list=tasksFor(d);if(tab==="Hoje")list.sort((a,b)=>Number(!!a.done[d])-Number(!!b.done[d])||b.priority-a.priority);return list.length?list.map(t=>{let done=!!t.done[d];let b=btn(done?"✓":"○",()=>{t.done[d]=!done;save(true);render()});b.setAttribute("aria-label",(done?"Reabrir ":"Concluir ")+t.title);return row(b,btn(t.time+" · "+t.title,()=>taskForm(t),done?"item complete":"item"),el("small","",priorities[t.priority]))}):[txt("Ainda não tens tarefas para este dia.")]}
-function home(){const now=new Date(),tasks=tasksFor(today()),n=tasks.filter(t=>t.done[today()]).length;
- page.append(txt(now.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long"})),el("section","hero",el("div","row spread",el("div","copy",txt(now.getHours()<12?"Bom dia":now.getHours()<19?"Boa tarde":"Boa noite"),el("h2","big","Um passo de cada vez."),txt("Vamos organizar o teu dia?")),pug()),el("small","",n+" de "+tasks.length+" tarefas concluídas"),progress(n,tasks.length)),weatherCard(),taskCard(today()),btn("Treinos",()=>go("Treinos")),btn("Devocional do dia",()=>{devDay=today();go("Devocional")}));
- const next=tasks.find(t=>!t.done[today()]&&t.time>=pad(now.getHours())+":"+pad(now.getMinutes()));
- page.append(card(heading("A seguir"),next?btn(next.time+" · "+next.title,()=>taskForm(next)):txt("Sem mais tarefas agendadas para as próximas horas.")));
+function home() {
+ const now=new Date(),date=today(),tasks=tasksFor(date),n=tasks.filter(t=>t.done[date]).length;
+ const hero=panel("sand",el("div","row spread",el("div","copy",
+   el("h1","greeting",now.getHours()<12?"Bom dia!":now.getHours()<19?"Boa tarde!":"Boa noite!"),
+   txt(now.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long"})),txt("Toca no Pug para uma saudação.")),el("div","pug-stage",pug())),
+   el("strong","small",n+" de "+tasks.length+" tarefas concluídas"),progress(n,tasks.length));
+ hero.classList.add("welcome");
+ const weather=weatherCard();weather.dataset.tone="blue";
+ const priorities=taskCard(date);priorities.dataset.tone="sage";
+ const next=tasks.find(t=>!t.done[date]&&t.time>=pad(now.getHours())+":"+pad(now.getMinutes()));
+ const overdue=data.tasks.filter(t=>t.date<date&&t.repeat===repeats[0]&&!t.done[t.date]);
+ page.append(hero,weather,priorities,panel("sand",heading("A seguir"),next?btn(next.time+" · "+next.title,()=>taskForm(next)):txt("Sem mais tarefas agendadas para as próximas horas.")));
+ if(overdue.length)page.append(panel("clay",heading("Por retomar"),...overdue.map(t=>row(btn("○",()=>{t.done[t.date]=true;save(true);render()}),btn(t.title,()=>taskForm(t),"item")))));
+ page.append(panel("lilac",heading("Um momento para ti"),btn("Começar um foco",()=>go("Foco")),btn("Treinos · Musculação, alongamentos e Pilates",()=>workout("strength")),btn("Devocional · Reflexão do dia",()=>{devDay=date;go("Devocional")})));
 }
-function taskCard(d){return card(heading("Tarefas"),...taskRows(d),row(btn("＋ Nova tarefa",()=>taskForm({date:d}),"primary"),btn("Ditar",()=>capture("voice")),btn("Imagem",()=>capture("photo"))))}
+function taskCard(d){return card(heading(tab==="Hoje"?"As tuas prioridades":"Tarefas"),...taskRows(d),row(btn("＋ Nova tarefa",()=>taskForm({date:d}),"primary"),btn("Criar lembrete por voz",()=>capture("voice")),btn("Criar a partir de imagem",()=>capture("photo"))))}
 
 let calendarMonth=day.slice(0,7),habitDay=today();
 function calendar(){
@@ -62,7 +72,15 @@ function wellbeing(){let d=today(),check=(data.checkins??={})[d]??={},mode=selec
  page.append(card(field("Como queres organizar o dia?",mode),heading("Como te sentes?"),choices("mood",["Muito em baixo","Em baixo","Razoável","Bem","Muito bem"]),heading("Energia"),choices("energy",["Baixa","Média","Alta"])),el("section","card peach",heading("Reflexão do dia"),txt(([["O teu ritmo também merece cuidado.", "Uma pausa pode ser o próximo passo.", "Hoje, reserva um pequeno momento para ti.", "Descansar também faz parte do caminho.", "Não precisas de fazer tudo para ter um bom dia.", "Escolhe um gesto de cuidado que caiba no teu dia.", "Começa por aquilo de que precisas agora."], ["Escolhe uma prioridade e dá-lhe espaço.", "Uma coisa de cada vez também é progresso.", "Um pequeno começo vale mais do que um plano perfeito.", "Deixa margem entre duas tarefas.", "Uma pausa pode ajudar a recuperar a atenção.", "Terminar uma etapa já conta.", "Define o próximo passo, não o caminho inteiro."], ["O dia tem espaço para fazer e para cuidar.", "O importante também inclui o teu bem-estar.", "Planeia com intenção e deixa espaço para a vida.", "Um passo pequeno continua a ser um passo.", "Podes ajustar o plano à energia de hoje.", "Fazer menos, com atenção, também conta.", "Entre uma tarefa e outra, lembra-te de ti."]])[data.homeMode??2][(dayNum(d)%7+7)%7]),txt(["Hoje, começa por um gesto de cuidado.","Escolhe uma tarefa essencial e um bloco de foco.","Equilibra uma prioridade com um momento para ti."][data.homeMode??2])),card(heading("Tempo para ti"),...["Treinos","Meditação","Devocional"].map(s=>btn(s,()=>go(s)))),heading("Hábitos essenciais"),...data.habits.filter(h=>/água|hidrata|pausa|descans|^ler$|leitura/i.test(h.title)).map(habitCard))}
 function devotional(){let r=reading(devDay),note=area(data.devotional?.[devDay]||"",10000);note.oninput=()=>{(data.devotional??={})[devDay]=note.value;save()};page.append(dayPicker(devDay,v=>{devDay=v;render()}),card(heading(r[0]),...r[1].split("\n\n").map(txt)),el("section","card peach",heading("Oração ou intenção"),txt(r[2])),card(heading("Reflexão pessoal"),txt(r[3]),field("A tua nota",note),txt("Guardada automaticamente neste dispositivo.")))}
 function link(label,url){let a=el("a","action",label);try{if(new URL(url).protocol!=="https:")throw Error();a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.onclick=e=>{if(native("open",{url}))e.preventDefault()}}catch{a.removeAttribute("href")}return a}
-function meditation(){["Como começar a meditar","Percorrer o corpo com atenção","Atenção à respiração"].forEach((v,i)=>page.append(card(heading(v),txt("NHS · Inglês · "+(i?"Áudio":"Vídeo com Dr. Becky Spelman")),link(i?"Ouvir meditação":"Ver introdução","https://players.brightcove.net/4934638104001/PLQU1osdl_default/index.html?videoId="+["6320866763112","6320906405112","6320873018112"][i]))))}
+function meditation(){
+ page.append(txt("Práticas guiadas em português de Portugal. Os vídeos abrem no YouTube e requerem Internet."));
+ const practices=[
+  ["Como começar a meditar","Uma prática de cinco minutos para começar.","SereniMedit","Ver vídeo de exemplo","MVf68vyXbYc","lilac"],
+  ["Percorrer o corpo com atenção","Observa as sensações do corpo, sem pressa.","SereniMedit","Ver prática de atenção ao corpo","ZsJ-DsK3k_Y","sand"],
+  ["Atenção à respiração","Acompanha o ritmo natural da respiração.","Associação Portuguesa para o Mindfulness","Ver prática de respiração","Pjcyyx4RbCs","blue"]
+ ];
+ for(const [title,desc,provider,label,id,tone] of practices)page.append(panel(tone,heading(title),txt(desc),videoCard(label,"https://www.youtube.com/watch?v="+id,provider)));
+}
 function remaining(end){return Math.max(0,Math.ceil((end-Date.now())/1000))}
 function displayTime(sec){return pad(Math.floor(sec/60))+":"+pad(sec%60)}
 function focus(){let minutes=num(data.focusMinutes||25,1,180);minutes.disabled=!!data.focusRunning;minutes.onchange=()=>{if(minutes.checkValidity()){data.focusMinutes=+minutes.value;resetFocus()}};

@@ -7,10 +7,12 @@ function fresh(){return {version:1,name:"Biscoito",created:today(),tasks:[],habi
 const map=o=>o!==null&&typeof o==="object"&&!Array.isArray(o);
 const size=(s,min,max)=>typeof s==="string"&&s.trim().length>=min&&s.length<=max;
 const integer=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
+const validPugPhoto=value=>typeof value==="string"&&value.length<=314028&&/^\/9j\/[A-Za-z0-9+/]+={0,2}$/.test(value);
 function validBackup(d){
  const dates=(obj,test)=>map(obj)&&Object.entries(obj).every(([key,v])=>validDay(key)&&test(v));
  const entries=(arr,max,test)=>Array.isArray(arr)&&arr.length<=max&&arr.every(t=>map(t)&&size(t.id,1,200)&&test(t))&&new Set(arr.map(t=>t.id)).size===arr.length;
  if(!map(d)||d.version!==1||!validDay(d.created)||!size(d.name,1,40))return false;
+ if(d.pugPhoto!==undefined&&!validPugPhoto(d.pugPhoto))return false;
  if(!entries(d.tasks,10000,t=>size(t.title,1,160)&&size(t.notes??"",0,4000)&&validDay(t.date)&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)&&repeats.includes(t.repeat)&&integer(t.priority,0,2)&&[-1,0,10,30,60].includes(t.reminder)&&dates(t.done,v=>typeof v==="boolean")))return false;
  if(!entries(d.habits,500,h=>size(h.title,1,80)&&integer(h.target,1,999)&&size(h.unit,0,30)&&dates(h.counts,v=>integer(v,0,999))))return false;
  if(!dates(d.devotional??{},v=>size(v,0,10000))||!dates(d.checkins??{},v=>map(v)&&(v.mood===undefined||integer(v.mood,0,4))&&(v.energy===undefined||integer(v.energy,0,2))))return false;

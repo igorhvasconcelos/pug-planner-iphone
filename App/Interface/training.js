@@ -10,9 +10,26 @@ function training(){page.append(dayPicker(trainingDay,v=>{trainingDay=v;render()
  let details=el("details","",el("summary","","Filtros"));for(let [key,title] of [["group","Grupo"],["areas","Região"],["tags","Equipamento ou adaptação"],...(section==="stretch"?[["moment","Momento"]]:[])]){let options=["Todos",...new Set(all.flatMap(x=>x[key]||[]))],s=select(options,Math.max(0,options.indexOf(filters[key])));s.onchange=()=>{filters[key]=s.selectedIndex?options[s.selectedIndex]:"";show()};details.append(field(title,s))}tools.append(details);page.append(tools,list);show()}
 function plan(){return (data.workouts??={})[trainingDay]??=[]}
 function permittedLink(value,demo){if(!value)return true;try{let u=new URL(value);return u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&(/(^|\.)youtube\.com$/.test(u.hostname)||u.hostname==="youtu.be"||!demo&&["spotify.com","open.spotify.com","music.apple.com"].includes(u.hostname))}catch{return false}}
-function exercise(x){let v=CONTENT.videos[x.id],personal=data.workoutSettings?.links?.[x.id]||{},demo=input("url",personal.demo||""),music=input("url",personal.music||"");
- const links=el("details","",el("summary","","Atalhos pessoais"),form([field("Demonstração no YouTube",demo),field("Playlist pessoal",music)],()=>{if(!permittedLink(demo.value,true)||!permittedLink(music.value,false))return alert("Usa uma ligação HTTPS do YouTube, Spotify ou Apple Music.");let settings=data.workoutSettings??={};(settings.links??={})[x.id]={demo:demo.value,music:music.value};save();exercise(x)}));
- sheet(x.name,txt(x.areas.join(" · ")),...[[ "Preparação",x.start],["Postura",x.cue],["Respiração",x.breath],["Cadência",x.cadence],["Limites",x.limit]].map(([k,v])=>el("div","",el("strong","",k),txt(v))),videoCard("Ver demonstração",v.url,v.provider+" · "+v.language),personal.demo?link("Ver demonstração pessoal",personal.demo):null,personal.music?link("Ouvir playlist pessoal",personal.music):null,links,btn("Adicionar ao treino de "+trainingDay,()=>{let p=plan();if(p.some(i=>i.exercise===x.id))return alert("Este exercício já faz parte do treino.");p.push({exercise:x.id,sets:x.sets,reps:x.reps,seconds:x.hold,rest:x.rest,load:x.tags.includes("Peso do corpo")?"Peso do corpo":"Por definir",done:[]});save();closeSheet();section="plan";render()},"primary"))}
+function exercise(x){
+ const personal=data.workoutSettings?.links?.[x.id]||{};
+ const music=input("url",personal.music||"");
+ const links=el("details","",el("summary","","Atalhos pessoais"),form([field("Playlist pessoal",music)],()=>{
+   if(!permittedLink(music.value,false))return alert("Usa uma ligação HTTPS do YouTube, Spotify ou Apple Music.");
+   const settings=data.workoutSettings??={};
+   (settings.links??={})[x.id]={...personal,music:music.value};
+   save();exercise(x);
+ }));
+ const detail=[["Preparação",x.start],["Postura",x.cue],["Respiração",x.breath],["Cadência",x.cadence],["Limites",x.limit]];
+ sheet(x.name,txt(x.areas.join(" · ")),shortDemo(CONTENT.videos[x.id],x.name),
+   ...detail.map(([k,v])=>el("div","",el("strong","",k),txt(v))),
+   personal.music?link("Ouvir playlist pessoal",personal.music):null,links,
+   btn("Adicionar ao treino de "+trainingDay,()=>{
+     const p=plan();
+     if(p.some(i=>i.exercise===x.id))return alert("Este exercício já faz parte do treino.");
+     p.push({exercise:x.id,sets:x.sets,reps:x.reps,seconds:x.hold,rest:x.rest,load:x.tags.includes("Peso do corpo")?"Peso do corpo":"Por definir",done:[]});
+     save();closeSheet();section="plan";render();
+   },"primary"));
+}
 function editSet(x,e){let sets=num(e.sets,1,10),reps=num(e.reps,0,100),sec=num(e.seconds,0,3600),rest=num(e.rest,0,600),load=input("text",e.load,40);sheet(x.name,form([field("Séries",sets),field("Repetições",reps),field("Execução em segundos",sec),field("Descanso em segundos",rest),field("Carga",load)],()=>{if(!(+reps.value + +sec.value))return alert("Indica repetições ou tempo de execução.");Object.assign(e,{sets:+sets.value,reps:+reps.value,seconds:+sec.value,rest:+rest.value,load:load.value,done:e.done.slice(0,+sets.value)});save();closeSheet();render()}))}
 function startTraining(label,seconds){if(!seconds)return;data.trainingLabel=label;data.trainingEnd=Date.now()+seconds*1000;save(true);render()}
 function workoutPlan(){let p=plan(),source=input("date"),music=input("url",data.workoutSettings?.music||"");

@@ -25,19 +25,20 @@ function tabIcon(index) {
  }
  return icon;
 }
-function videoCard(label,url,source) {
- const anchor=link(label,url);
- const host=new URL(url).hostname;
- const videoId=host==="youtu.be"?new URL(url).pathname.slice(1):host.endsWith("youtube.com")?new URL(url).searchParams.get("v"):null;
- if(videoId&&/^[\w-]{11}$/.test(videoId)){
-   const image=el("img","video-cover");
-   image.src="https://i.ytimg.com/vi/"+videoId+"/hqdefault.jpg";
-   image.alt="";
-   image.loading="lazy";
-   image.onerror=()=>image.remove();
-   anchor.prepend(image);
- }
- return el("div","stack",anchor,txt(source));
+function shortDemo(clip,title){
+ const fallback=()=>txt("Sem demonstração disponível até 20 segundos.");
+ if(!clip||clip.seconds<=0||clip.seconds>20)return fallback();
+ const player=el("video","exercise-video");
+ player.controls=true;player.playsInline=true;player.preload="metadata";
+ player.setAttribute("aria-label","Demonstração de "+title);
+ const box=el("div","stack",player,txt("Demonstração · "+Math.ceil(clip.seconds)+" s"),
+   clip.credit==="Exercise video by Your Move"?link(clip.credit,"https://ymove.app/"):txt(clip.credit));
+ player.addEventListener("error",()=>box.replaceChildren(fallback()),{once:true});
+ player.addEventListener("loadedmetadata",()=>{
+   if(!Number.isFinite(player.duration)||player.duration<=0||player.duration>20){player.pause();box.replaceChildren(fallback())}
+ });
+ player.src=clip.file;
+ return box;
 }
 function workout(sectionName,date=today(),group="") {
  section=sectionName;
@@ -127,8 +128,8 @@ function pets(){
      b.setAttribute("aria-pressed",done);return b;
    })),
    panel("blue",heading("Vacinas"),btn("Registar vacina",()=>vaccineEditor(pet,{}),"primary"),...vaccines.map(v=>btn(v.title+(v.date?" · "+v.date:""),()=>vaccineEditor(pet,v)))),
-   panel("lilac",heading("Melhores comportamentos do pet"),...CONTENT.petLessons.slice(dog?0:3,dog?3:5).map(([title,description,label,id])=>
-     el("section","stack",heading(title),txt(description),videoCard(label,"https://www.youtube.com/watch?v="+id,"YouTube")))),
+   panel("lilac",heading("Melhores comportamentos do pet"),...CONTENT.petLessons.slice(dog?0:3,dog?3:5).map(([title,description])=>
+     el("section","stack",heading(title),txt(description)))),
    panel("sand",heading("Dicas de cuidado"),...CONTENT.petTips.slice(dog?0:16,dog?16:27).map(([title,description])=>el("details","",el("summary","",title),txt(description)))));
 }
 function vaccineEditor(pet,v,original=v){
@@ -164,7 +165,10 @@ function recipeFromText(result){
  return {title:title.replace(/^receita\s*:\s*/i,"").slice(0,160),ingredients:ingredients.join("\n"),preparation:preparation.join("\n")};
 }
 window.mediaResult=(kind,result)=>{
- if(kind==="recipe"){
+ if(kind==="pug"){
+   if(validPugPhoto(result))setPugPhoto(result);
+   else notice("Não foi possível abrir a imagem do Pug.");
+ }else if(kind==="recipe"){
    recipeEditor(recipeFromText(result),result);
  }else if(kind==="vaccine"&&vaccineDraft){
    const {pet,v,original}=vaccineDraft;vaccineEditor(pet,{...v,photo:result},original);

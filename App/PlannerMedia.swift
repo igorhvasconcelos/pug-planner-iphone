@@ -4,14 +4,19 @@ import ImageIO
 
 enum PlannerMedia {
     static func process(_ data: Data, mode: String) throws -> String {
-        let maxPixels = mode == "vaccine" ? 1024 : mode == "food" ? 1024 : 4096
+        let maxPixels: Int
+        switch mode {
+        case "pug": maxPixels = 768
+        case "vaccine", "food": maxPixels = 1024
+        default: maxPixels = 4096
+        }
         guard let src = CGImageSourceCreateWithData(data as CFData, nil),
               let cg = CGImageSourceCreateThumbnailAtIndex(src,0,[
                 kCGImageSourceCreateThumbnailFromImageAlways:true,
                 kCGImageSourceCreateThumbnailWithTransform:true,
                 kCGImageSourceThumbnailMaxPixelSize:maxPixels
               ] as CFDictionary) else { throw CocoaError(.fileReadCorruptFile) }
-        if mode == "vaccine" {
+        if mode == "vaccine" || mode == "pug" {
             let image = UIImage(cgImage: cg)
             for quality: CGFloat in [0.8, 0.6, 0.4, 0.25, 0.1] {
                 if let jpeg = image.jpegData(compressionQuality: quality), jpeg.count <= 230 * 1024 {

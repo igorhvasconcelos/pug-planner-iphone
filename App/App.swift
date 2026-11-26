@@ -29,6 +29,7 @@ final class PlannerController: UIViewController, WKScriptMessageHandler, WKUIDel
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
         config.userContentController.add(self,name:"planner")
         // Keep planner data across bundle path changes on app updates.
         if let stored = UserDefaults.standard.string(forKey:"plannerData"),

@@ -17,15 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.11.0</string>
+	<string>1.11.1</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAlarmKitUsageDescription</key>
 	<string>O Pug Planner usa alarmes para os teus lembretes e temporizadores.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Fotografa documentos, receitas, alimentos ou boletins de vacinação.</string>
+	<string>Fotografa o teu Pug, documentos, receitas, alimentos ou boletins de vacinação.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

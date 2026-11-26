@@ -14,7 +14,17 @@ let noticeTimer;function notice(s){$("#toast").textContent=s;clearTimeout(notice
 const tabs=["Hoje","Agenda","Bem-estar","Fitness","Receitas","Meu pet","Hábitos","Foco","Pug"];let tab="Hoje",day=today(),devDay=today(),trainingDay=today(),lastDay=today();
 function go(to){tab=to;render();window.scrollTo(0,0)}
 function dayPicker(value,change){let i=input("date",value);i.onchange=()=>{if(validDay(i.value))change(i.value)};return row(field("Data",i),btn("Hoje",()=>change(today())))}
-function pug(){let i=el("img","pug wave");i.src="pug.png";i.alt=data.name+" com bandana verde";i.style.filter=["none","grayscale(1)","sepia(.5)"][data.appearance||0];let play=()=>{i.classList.remove("wave");void i.offsetWidth;i.classList.add("wave")};i.onclick=play;i.tabIndex=0;i.setAttribute("role","button");i.onkeydown=e=>{if(["Enter"," "].includes(e.key)){e.preventDefault();play()}};return i}
+function pug(){
+ const custom=validPugPhoto(data.pugPhoto);
+ const i=el("img",custom?"pug wave pug-photo":"pug wave");
+ i.src=custom?"data:image/jpeg;base64,"+data.pugPhoto:"pug.png";
+ i.alt=custom?"Fotografia de "+data.name:data.name+" com bandana verde";
+ if(!custom)i.style.filter=["none","grayscale(1)","sepia(.5)"][data.appearance||0];
+ function play(){i.classList.remove("wave");void i.offsetWidth;i.classList.add("wave")}
+ i.onclick=play;i.tabIndex=0;i.setAttribute("role","button");
+ i.onkeydown=e=>{if(["Enter"," "].includes(e.key)){e.preventDefault();play()}};
+ return i;
+}
 function progress(n,total){let p=el("progress");p.max=Math.max(total,1);p.value=n;p.setAttribute("aria-label",n+" de "+total);return p}
 function render(){
  document.documentElement.classList.toggle("dark",!!data.dark);document.documentElement.dataset.theme=data.theme||0;
@@ -73,13 +83,12 @@ function wellbeing(){let d=today(),check=(data.checkins??={})[d]??={},mode=selec
 function devotional(){let r=reading(devDay),note=area(data.devotional?.[devDay]||"",10000);note.oninput=()=>{(data.devotional??={})[devDay]=note.value;save()};page.append(dayPicker(devDay,v=>{devDay=v;render()}),card(heading(r[0]),...r[1].split("\n\n").map(txt)),el("section","card peach",heading("Oração ou intenção"),txt(r[2])),card(heading("Reflexão pessoal"),txt(r[3]),field("A tua nota",note),txt("Guardada automaticamente neste dispositivo.")))}
 function link(label,url){let a=el("a","action",label);try{if(new URL(url).protocol!=="https:")throw Error();a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.onclick=e=>{if(native("open",{url}))e.preventDefault()}}catch{a.removeAttribute("href")}return a}
 function meditation(){
- page.append(txt("Práticas guiadas em português de Portugal. Os vídeos abrem no YouTube e requerem Internet."));
  const practices=[
-  ["Como começar a meditar","Uma prática de cinco minutos para começar.","SereniMedit","Ver vídeo de exemplo","MVf68vyXbYc","lilac"],
-  ["Percorrer o corpo com atenção","Observa as sensações do corpo, sem pressa.","SereniMedit","Ver prática de atenção ao corpo","ZsJ-DsK3k_Y","sand"],
-  ["Atenção à respiração","Acompanha o ritmo natural da respiração.","Associação Portuguesa para o Mindfulness","Ver prática de respiração","Pjcyyx4RbCs","blue"]
+   ["Como começar a meditar","Senta-te de forma confortável. Deixa os ombros soltos e repara na respiração. Sempre que te distraíres, volta com calma à sensação de respirar.","lilac"],
+   ["Percorrer o corpo com atenção","Começa pelos pés e vai levando a atenção às pernas, ao tronco e à cabeça. Observa o que sentes em cada zona.","sand"],
+   ["Atenção à respiração","Repara no ar a entrar e a sair. Deixa a respiração seguir ao seu ritmo. Quando a atenção se afastar, volta a reparar no ar.","blue"]
  ];
- for(const [title,desc,provider,label,id,tone] of practices)page.append(panel(tone,heading(title),txt(desc),videoCard(label,"https://www.youtube.com/watch?v="+id,provider)));
+ for(const [title,guide,tone] of practices)page.append(panel(tone,heading(title),txt(guide)));
 }
 function remaining(end){return Math.max(0,Math.ceil((end-Date.now())/1000))}
 function displayTime(sec){return pad(Math.floor(sec/60))+":"+pad(sec%60)}

@@ -83,10 +83,10 @@ Se o build ficou verde e **o Sideloadly** falhou, o problema já é de emparelha
 
 
 
-## Atualização 1.11.0
+## Atualização 1.11.1
 
-A interface segue a paleta e as nove áreas do Android 1.11.0. Inclui os 60 exercícios e as respetivas ligações de demonstração, os três vídeos de meditação em português e as cinco demonstrações de treino para cães e gatos. As ligações abrem externamente e requerem Internet.
+Em **Pug → Personalização → Alterar imagem do Pug**, escolhe uma fotografia da Fototeca ou tira uma com a Câmara. A fotografia aparece no início e nas páginas que usam a imagem do Pug. Podes escolher **Repor ilustração original** em qualquer altura. A imagem fica guardada com os dados da app e entra na cópia de segurança JSON.
 
-Para atualizar pelo GitHub, carrega a nova pasta App no repositório existente e instala o novo IPA por cima da edição anterior. Mantém o mesmo Apple ID e o mesmo identificador efetivo no Sideloadly. Podes exportar primeiro uma cópia JSON em Pug. O bundle ID no projeto mantém-se.
+Os clips de exercício incluídos abrem na ficha e funcionam sem Internet. O [inventário de demonstrações](DEMONSTRACOES.md) indica a duração, a fonte e o nome dos exercícios que conservam apenas instruções escritas. As práticas de meditação e os exercícios de comportamento do pet estão em texto nesta edição.
 
-A classificação de alimentos usa o Vision do iOS para sugerir opções a confirmar. O catálogo de calorias reproduz os dados da edição Android. As sugestões fotográficas podem diferir das do modelo usado no Android. O seletor de imagens abre dentro de cada página. A edição gratuita conserva um único alvo iOS.
+Para atualizar pelo GitHub, carrega a pasta **App** do ZIP no repositório existente, incluindo **App/Interface/demos**. Instala o novo IPA por cima da edição anterior com o mesmo Apple ID e o mesmo identificador efetivo no Sideloadly. Podes exportar primeiro uma cópia JSON em **Pug**.
